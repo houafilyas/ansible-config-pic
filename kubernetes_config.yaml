@@ -1,0 +1,76 @@
+---
+- name: Install Kubernetes
+  hosts: kubernetes_nodes
+  become: true
+  vars:
+    kube_version: "1.22.2-00"  
+    cni_version: "0.9.1-00"    
+
+  tasks:
+    - name: Update apt repositories
+      apt:
+        update_cache: yes
+
+    - name: Install required packages
+      apt:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - software-properties-common
+
+    - name: Add Kubernetes apt key
+      apt_key:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        state: present
+
+    - name: Add Kubernetes apt repository
+      apt_repository:
+        repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+        state: present
+
+    - name: Install Docker
+      apt:
+        name: docker.io
+        state: present
+
+    - name: Ensure Docker is started and enabled
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Install Kubernetes packages
+      apt:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - kubelet={{ kube_version }}
+        - kubeadm={{ kube_version }}
+        - kubectl={{ kube_version }}
+
+    - name: Hold Kubernetes packages at the installed version
+      apt:
+        name: "{{ item }}"
+        state: held
+      with_items:
+        - kubelet
+        - kubeadm
+        - kubectl
+
+    - name: Install Container Network Interface (CNI)
+      command: "curl -sSL https://github.com/containernetworking/plugins/releases/download/v{{ cni_version }}/cni-plugins-linux-amd64-v{{ cni_version }}.tgz | tar -xz -C /opt/cni/bin/"
+
+    - name: Initialize Kubernetes on master node
+      command: "kubeadm init --kubernetes-version={{ kube_version }}"
+      when: "'kubernetes_master' in group_names"
+
+    - name: Copy kubeconfig to user's home directory on master node
+      command: "mkdir -p $HOME/.kube && cp -i /etc/kubernetes/admin.conf $HOME/.kube/config"
+      when: "'kubernetes_master' in group_names"
+
+    - name: Install weave CNI on master node
+      command: "kubectl apply -f https://cloud.weave.works/k8s/net/weave-kube-2.8.yaml"
+      when: "'kubernetes_master' in group_names"
