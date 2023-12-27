@@ -1,6 +1,8 @@
 ---
 - name: Install Kubernetes
-  hosts: kubernetes_nodes
+  hosts: 
+    - kubernetes_master
+    - kubernetes_workers
   become: true
   vars:
     kube_version: "1.22.2-00"  
