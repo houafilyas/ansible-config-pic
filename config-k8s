@@ -1,0 +1,113 @@
+---
+- name: Configure Kubernetes Cluster
+  hosts: all
+  become: yes
+  tasks:
+    - name: Update the package repository
+      apt:
+        update_cache: yes
+
+    - name: Install Docker
+      apt:
+        name: docker.io
+        state: present
+        update_cache: yes
+
+    - name: Access Repos via HTTPS
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - apt-transport-https
+        - curl
+
+    - name: Add K8S key and Repo
+      block:
+        - name: Add Kubernetes key
+          ansible.builtin.shell: |
+            curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+        - name: Add Kubernetes Repo
+          copy:
+            dest: /etc/apt/sources.list.d/kubernetes.list
+            content: |
+              deb https://apt.kubernetes.io/ kubernetes-xenial main
+      notify: Update repo
+
+    - name: Update the package repository and Install K8S components
+      apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: yes
+      loop:
+        - kubelet=1.18.1-00
+        - kubeadm=1.18.1-00
+        - kubectl=1.18.1-00
+      notify: Hold K8S packages
+
+    - name: Disable SWAP
+      block:
+        - command: sudo swapoff -a
+        - lineinfile:
+            path: /etc/fstab
+            regexp: '^.*swap.*$'
+            state: absent
+
+  handlers:
+    - name: Update repo
+      apt:
+        update_cache: yes
+
+    - name: Hold K8S packages
+      apt:
+        name: "{{ item }}"
+        state: hold
+      loop:
+        - kubelet
+        - kubeadm
+        - kubectl
+
+- name: Kubernetes Master Configuration
+  hosts: kubernetes-master
+  become: yes
+  tasks:
+    - name: Initiate the Cluster
+      command: kubeadm init --control-plane-endpoint kube-master:6443 --pod-network-cidr 10.10.0.0/16
+
+    - name: Set the kubectl context auth to connect to the cluster
+      block:
+        - file:
+            path: "$HOME/.kube"
+            state: directory
+            mode: '0755'
+        - copy:
+            src: /etc/kubernetes/admin.conf
+            dest: "$HOME/.kube/config"
+        - file:
+            path: "$HOME/.kube/config"
+            owner: "{{ ansible_env.SUDO_USER }}"
+            group: "{{ ansible_env.SUDO_USER }}"
+
+    - name: Pod Network Addon (Calico)
+      block:
+        - get_url:
+            url: https://docs.projectcalico.org/manifests/calico.yaml
+            dest: ~/calico.yaml
+        - command: kubectl apply -f ~/calico.yaml
+
+    - name: Generate Token to add worker Node
+      block:
+        - command: kubeadm token create
+          register: token
+        - debug:
+            var: token.stdout
+        - command: openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex
+          register: hash
+        - debug:
+            var: hash.stdout
+
+- name: Join Worker Nodes to the Cluster
+  hosts: kubernetes-workers
+  become: yes
+  tasks:
+    - name: Join the cluster
+      command: kubeadm join --token YOUR_TOKEN --discovery-token-ca-cert-hash sha256:YOUR_HASH
