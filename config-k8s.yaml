@@ -104,9 +104,9 @@
 #        - debug:
 #            var: hash.stdout
 
-- name: Join Worker Nodes to the Cluster
-  hosts: kubernetes-workers
-  become: yes
-  tasks:
-    - name: Join the cluster
-      command: kubeadm join --token YOUR_TOKEN --discovery-token-ca-cert-hash sha256:YOUR_HASH
+#- name: Join Worker Nodes to the Cluster
+#  hosts: kubernetes-workers
+#  become: yes
+#  tasks:
+#    - name: Join the cluster
+#      command: kubeadm join --token YOUR_TOKEN --discovery-token-ca-cert-hash sha256:YOUR_HASH
