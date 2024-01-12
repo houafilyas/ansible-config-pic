@@ -1,101 +1,123 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: frontend-service-1
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: frontend-service-1
-  template:
-    metadata:
-      labels:
-        app: frontend-service-1
-    spec:
-      containers:
-      - name: frontend-container-1
-        image: your-registry/frontend-service-1:latest
-        ports:
-        - containerPort: 80
-
----
-
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: frontend-service-2
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: frontend-service-2
-  template:
-    metadata:
-      labels:
-        app: frontend-service-2
-    spec:
-      containers:
-      - name: frontend-container-2
-        image: your-registry/frontend-service-2:latest
-        ports:
-        - containerPort: 80
-
----
-
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: frontend-service-3
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: frontend-service-3
-  template:
-    metadata:
-      labels:
-        app: frontend-service-3
-    spec:
-      containers:
-      - name: frontend-container-3
-        image: your-registry/frontend-service-3:latest
-        ports:
-        - containerPort: 80
-
----
-
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: frontend-service-4
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: frontend-service-4
-  template:
-    metadata:
-      labels:
-        app: frontend-service-4
-    spec:
-      containers:
-      - name: frontend-container-4
-        image: your-registry/frontend-service-4:latest
-        ports:
-        - containerPort: 80
-
----
-
 apiVersion: v1
 kind: Service
 metadata:
-  name: frontend-load-balancer
+  name: marketing
 spec:
   selector:
-    app: frontend-service-1
+    app: marketing
   ports:
-  - protocol: TCP
-    port: 80
-    targetPort: 80
+    - protocol: TCP
+      port: 8081
+      targetPort: 8081
   type: LoadBalancer
-
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: marketing
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: marketing
+  template:
+    metadata:
+      labels:
+        app: marketing
+    spec:
+      containers:
+        - name: marketing
+          image: ash0semlali/marketing
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth
+spec:
+  selector:
+    app: auth
+  ports:
+    - protocol: TCP
+      port: 8082
+      targetPort: 8082
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth
+  template:
+    metadata:
+      labels:
+        app: auth
+    spec:
+      containers:
+        - name: auth
+          image: ash0semlali/auth
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dashboard
+spec:
+  selector:
+    app: dashboard
+  ports:
+    - protocol: TCP
+      port: 8083
+      targetPort: 8083
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dashboard
+  template:
+    metadata:
+      labels:
+        app: dashboard
+    spec:
+      containers:
+        - name: dashboard
+          image: ash0semlali/dashboard
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: container
+spec:
+  selector:
+    app: container
+  ports:
+    - protocol: TCP
+      port: 8088
+      targetPort: 8088
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: container
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: container
+  template:
+    metadata:
+      labels:
+        app: container
+    spec:
+      containers:
+        - name: container
+          image: ash0semlali/container
