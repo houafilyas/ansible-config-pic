@@ -9,9 +9,10 @@
 
     - name: Install Docker
       apt:
-        name: docker.io
+        name: docker.io=20.10*
         state: present
         update_cache: yes
+        allow_downgrades: yes
 
     - name: Access Repos via HTTPS
       apt:
@@ -38,6 +39,7 @@
         name: "{{ item }}"
         state: present
         update_cache: yes
+        allow_downgrades: yes
       loop:
         - kubelet=1.22.2-00
         - kubeadm=1.22.2-00
