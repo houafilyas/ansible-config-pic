@@ -1,6 +1,6 @@
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: Service
 metadata:
   name: marketing
 spec:
@@ -21,7 +21,7 @@ spec:
 
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: Service
 metadata:
   name: auth
 spec:
@@ -42,7 +42,7 @@ spec:
 
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: Service
 metadata:
   name: dashboard
 spec:
@@ -63,7 +63,7 @@ spec:
 ---
 
 apiVersion: apps/v1
-kind: Deployment
+kind: Service
 metadata:
   name: container
 spec:
