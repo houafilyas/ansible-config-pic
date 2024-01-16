@@ -1,22 +1,10 @@
-apiVersion: v1
-kind: Service
-metadata:
-  name: marketing
-spec:
-  selector:
-    app: marketing
-  ports:
-    - protocol: TCP
-      port: 8081
-      targetPort: 8081
-  type: LoadBalancer
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: marketing
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: marketing
@@ -26,28 +14,18 @@ spec:
         app: marketing
     spec:
       containers:
-        - name: marketing
-          image: ash0semlali/marketing
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: auth
-spec:
-  selector:
-    app: auth
-  ports:
-    - protocol: TCP
-      port: 8082
-      targetPort: 8082
-  type: LoadBalancer
+      - name: marketing
+        image: ash0semlali/marketing
+        ports:
+        - containerPort: 8081
+
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: auth
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: auth
@@ -59,19 +37,9 @@ spec:
       containers:
         - name: auth
           image: ash0semlali/auth
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: dashboard
-spec:
-  selector:
-    app: dashboard
-  ports:
-    - protocol: TCP
-      port: 8083
-      targetPort: 8083
-  type: LoadBalancer
+      ports:
+        - containerPort: 8082
+
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -90,20 +58,10 @@ spec:
       containers:
         - name: dashboard
           image: ash0semlali/dashboard
+      ports:
+        - containerPort: 8083
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  name: container
-spec:
-  selector:
-    app: container
-  ports:
-    - protocol: TCP
-      port: 8088
-      targetPort: 8088
-  type: LoadBalancer
----
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -121,3 +79,20 @@ spec:
       containers:
         - name: container
           image: ash0semlali/container
+      ports:
+        - containerPort: 8088
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: container
+spec:
+  selector:
+    app: container
+  ports:
+    - protocol: TCP
+      port: 8088
+      targetPort: 8088
+  type: LoadBalancer
