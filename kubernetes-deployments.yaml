@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: auth
-        image: your-docker-repository/auth:latest
+        image: ash0semlali/auth:latest
         ports:
         - containerPort: 8080
 
@@ -49,7 +49,7 @@ spec:
     spec:
       containers:
       - name: marketing
-        image: your-docker-repository/marketing:latest
+        image: ash0semlali/marketing:latest
         ports:
         - containerPort: 8081
 
@@ -83,7 +83,7 @@ spec:
     spec:
       containers:
       - name: dashboard
-        image: your-docker-repository/dashboard:latest
+        image: ash0semlali/dashboard:latest
         ports:
         - containerPort: 8083
 
@@ -117,7 +117,7 @@ spec:
     spec:
       containers:
       - name: container
-        image: your-docker-repository/container:latest
+        image: ash0semlali/container:latest
         ports:
         - containerPort: 8005
 
