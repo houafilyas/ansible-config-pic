@@ -1,10 +1,44 @@
----
+# auth-deployment.yaml
 apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: auth
+  template:
+    metadata:
+      labels:
+        app: auth
+    spec:
+      containers:
+      - name: auth
+        image: your-docker-repository/auth:latest
+        ports:
+        - containerPort: 8080
+
+---
+apiVersion: v1
 kind: Service
 metadata:
-  name: marketing
+  name: auth-service
 spec:
-  replicas: 2
+  selector:
+    app: auth
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+
+# marketing-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: marketing-deployment
+spec:
+  replicas: 3
   selector:
     matchLabels:
       app: marketing
@@ -15,38 +49,30 @@ spec:
     spec:
       containers:
       - name: marketing
-        image: ash0semlali/marketing
+        image: your-docker-repository/marketing:latest
         ports:
         - containerPort: 8081
 
 ---
-apiVersion: apps/v1
+apiVersion: v1
 kind: Service
 metadata:
-  name: auth
+  name: marketing-service
 spec:
-  replicas: 2
   selector:
-    matchLabels:
-      app: auth
-  template:
-    metadata:
-      labels:
-        app: auth
-    spec:
-      containers:
-        - name: auth
-          image: ash0semlali/auth
-      ports:
-        - containerPort: 8082
+    app: marketing
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8081
 
----
+# dashboard-deployment.yaml
 apiVersion: apps/v1
-kind: Service
+kind: Deployment
 metadata:
-  name: dashboard
+  name: dashboard-deployment
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: dashboard
@@ -56,18 +82,31 @@ spec:
         app: dashboard
     spec:
       containers:
-        - name: dashboard
-          image: ash0semlali/dashboard
-      ports:
+      - name: dashboard
+        image: your-docker-repository/dashboard:latest
+        ports:
         - containerPort: 8083
----
 
-apiVersion: apps/v1
+---
+apiVersion: v1
 kind: Service
 metadata:
-  name: container
+  name: dashboard-service
 spec:
-  replicas: 1
+  selector:
+    app: dashboard
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8083
+
+# container-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: container-deployment
+spec:
+  replicas: 3
   selector:
     matchLabels:
       app: container
@@ -77,22 +116,21 @@ spec:
         app: container
     spec:
       containers:
-        - name: container
-          image: ash0semlali/container
-      ports:
-        - containerPort: 8088
+      - name: container
+        image: your-docker-repository/container:latest
+        ports:
+        - containerPort: 8005
 
 ---
-
 apiVersion: v1
 kind: Service
 metadata:
-  name: container
+  name: container-service
 spec:
   selector:
     app: container
   ports:
     - protocol: TCP
-      port: 8088
-      targetPort: 8088
-  type: LoadBalancer
+      port: 80
+      targetPort: 8005
+  type: NodePort
